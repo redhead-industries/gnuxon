@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- CameraX Preview -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <!-- Record Button -->
+    <Button
+        android:id="@+id/btn_record"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/record_button_bg"
+        android:text="@string/start_recording"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:elevation="6dp" />
+
+    <!-- Overlay: Control Instructions -->
+    <TextView
+        android:id="@+id/tv_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔈 Volume Down – Stop Recording"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:background="#66000000"
+        android:padding="8dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="150dp"
+        android:visibility="gone"
+        android:elevation="8dp"
+        android:fontFamily="monospace" />
+
+</RelativeLayout>
+

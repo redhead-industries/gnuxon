@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">GNUXON</string>
+
+    <!-- First Run Activity -->
+    <string name="welcome_to_gnuxon">Welcome to GNUXON!</string>
+    <string name="permission_request_text">Please grant all required permissions to use GNUXON as a body camera</string>
+    <string name="grant_permissions">Grant Permissions</string>
+    <string name="first_run_legal_text">GNUXON is Free and Open Source Software (FOSS) maintained by RedHead Industries (RIIDF Branch). By using this app, you agree to use it responsibly and in compliance with local laws. Record only where you have legal authority to do so.</string>
+
+    <!-- Camera Activity -->
+    <string name="start_recording">START</string>
+    <string name="stop_recording">STOP</string>
+
+    <!-- Notification -->
+    <string name="recording_channel_name">Recording Status</string>
+    <string name="recording_channel_description">Shows when GNUXON is recording</string>
+    <string name="recording_notification_title">GNUXON Recording</string>
+    <string name="recording_notification_text">Body camera is currently recording</string>
+
+    <!-- Foreground Service Notifications -->
+    <string name="foreground_recording_channel_name">Background Recording</string>
+    <string name="foreground_recording_channel_description">Background video recording for body camera functionality</string>
+    <string name="foreground_recording_notification_title">GNUXON - Background Recording</string>
+    <string name="foreground_recording_notification_text">Body camera is recording in background</string>
+
+    <!-- Android 14+ Foreground Service Justifications -->
+    <string name="foreground_service_camera_justification">GNUXON requires camera access for body camera functionality to record video in the background for law enforcement, journalism, and security purposes. This enables continuous recording even when the device is locked or the app is in the background.</string>
+
+    <string name="foreground_service_microphone_justification">GNUXON requires microphone access to record audio along with video for complete body camera functionality used by police officers, journalists, and security personnel. Audio recording provides crucial context for video evidence.</string>
+
+    <!-- Screen Recording Stuff -->
+    <string name="screen_recording_channel_name">Screen Recording</string>
+    <string name="screen_recording_channel_description">Screen recording for body camera functionality</string>
+</resources>
