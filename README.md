@@ -55,7 +55,7 @@ git clone https://github.com/redhead-industries/gnuxon.git
 cd gnuxon
 ```
 
-3. Open the project in **Android Studio (Arctic Fox or newer)**.
+3. Open the project in **Android Studio (Otter or newer)**.
 
 4. Let Gradle sync automatically.
    Minimum SDK: **34**
