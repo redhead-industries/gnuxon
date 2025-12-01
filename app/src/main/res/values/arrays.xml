@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Video Quality Presets -->
+    <string-array name="video_quality_entries">
+        <item>@string/quality_low</item>
+        <item>@string/quality_medium</item>
+        <item>@string/quality_high</item>
+        <item>@string/quality_ultra</item>
+        <item>@string/quality_custom</item>
+    </string-array>
+
+    <string-array name="video_quality_values">
+        <item>low</item>
+        <item>medium</item>
+        <item>high</item>
+        <item>ultra</item>
+        <item>custom</item>
+    </string-array>
+
+    <!-- Frame Rate Options -->
+    <string-array name="frame_rate_entries">
+        <item>@string/fps_24</item>
+        <item>@string/fps_30</item>
+        <item>@string/fps_60</item>
+    </string-array>
+
+    <string-array name="frame_rate_values">
+        <item>24</item>
+        <item>30</item>
+        <item>60</item>
+    </string-array>
+
+    <!-- Audio Bitrate Options -->
+    <string-array name="audio_bitrate_entries">
+        <item>@string/audio_bitrate_96</item>
+        <item>@string/audio_bitrate_128</item>
+        <item>@string/audio_bitrate_192</item>
+        <item>@string/audio_bitrate_256</item>
+    </string-array>
+
+    <string-array name="audio_bitrate_values">
+        <item>96</item>
+        <item>128</item>
+        <item>192</item>
+        <item>256</item>
+    </string-array>
+
+    <!-- Audio Sample Rate Options -->
+    <string-array name="audio_sample_rate_entries">
+        <item>@string/audio_sample_rate_44100</item>
+        <item>@string/audio_sample_rate_48000</item>
+    </string-array>
+
+    <string-array name="audio_sample_rate_values">
+        <item>44100</item>
+        <item>48000</item>
+    </string-array>
+</resources>
+

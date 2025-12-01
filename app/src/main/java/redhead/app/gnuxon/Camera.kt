@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -18,6 +18,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import redhead.app.gnuxon.service.BackgroundRecordingService
 import java.io.File
 import java.text.SimpleDateFormat
@@ -27,7 +29,7 @@ import java.util.concurrent.Executors
 
 class Camera : AppCompatActivity() {
     private lateinit var previewView: PreviewView
-    private lateinit var recordButton: Button
+    private lateinit var recordButton: ImageButton
     private lateinit var tvControls: TextView
 
     private var videoCapture: VideoCapture<Recorder>? = null
@@ -36,6 +38,7 @@ class Camera : AppCompatActivity() {
 
     private var activeRecording: Recording? = null
     private var isRecording = false
+    private var currentOutputFile: File? = null
 
     private val requiredPermissions = arrayOf(
         Manifest.permission.CAMERA,
@@ -92,7 +95,23 @@ class Camera : AppCompatActivity() {
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
             val preview = Preview.Builder().build().also { it.surfaceProvider = previewView.surfaceProvider }
-            val recorder = Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
+
+            // Apply user preferences for recording quality
+            val resolutionHeight = RecordingPreferences.getResolutionHeight(this)
+
+            // Select closest quality based on resolution
+            val quality = when {
+                resolutionHeight >= 2160 -> Quality.UHD
+                resolutionHeight >= 1080 -> Quality.FHD
+                resolutionHeight >= 720 -> Quality.HD
+                else -> Quality.SD
+            }
+
+            val qualitySelector = QualitySelector.from(quality, FallbackStrategy.higherQualityOrLowerThan(quality))
+            val recorder = Recorder.Builder()
+                .setQualitySelector(qualitySelector)
+                .build()
+
             videoCapture = VideoCapture.withOutput(recorder)
 
             try {
@@ -115,7 +134,9 @@ class Camera : AppCompatActivity() {
     private fun startVideoRecording() {
         val capture = videoCapture ?: return
         try {
-            val outputOptions = FileOutputOptions.Builder(getOutputFile()).build()
+            val outputFile = getOutputFile()
+            currentOutputFile = outputFile
+            val outputOptions = FileOutputOptions.Builder(outputFile).build()
             val recordingSetup = capture.output.prepareRecording(this, outputOptions).apply {
                 if (ContextCompat.checkSelfPermission(this@Camera, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)
                     withAudioEnabled()
@@ -135,6 +156,16 @@ class Camera : AppCompatActivity() {
                         showUI()
                         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                         backgroundRecordingService.hideRecordingNotification()
+
+                        // Generate MD5 hash for the recorded video
+                        currentOutputFile?.let { file ->
+                            if (event.error == VideoRecordEvent.Finalize.ERROR_NONE) {
+                                lifecycleScope.launch {
+                                    VideoHashManager.computeAndSaveHash(this@Camera, file)
+                                }
+                            }
+                        }
+
                         Toast.makeText(this, "Recording saved", Toast.LENGTH_SHORT).show()
                     }
                 }

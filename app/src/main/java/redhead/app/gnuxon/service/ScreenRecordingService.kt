@@ -1,22 +1,27 @@
 package redhead.app.gnuxon.service
 
 import android.app.*
-import android.content.Context
 import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.MediaRecorder
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.Build
 import android.os.IBinder
 import android.os.Environment
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import redhead.app.gnuxon.Camera
 import redhead.app.gnuxon.R
+import redhead.app.gnuxon.RecordingPreferences
+import redhead.app.gnuxon.VideoHashManager
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -43,12 +48,16 @@ class ScreenRecordingService : Service() {
     private var displayWidth: Int = 0
     private var displayHeight: Int = 0
     private var isRecording = false
+    private var currentOutputFile: File? = null
+
+    // Structured coroutine scope for the service
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        mediaProjectionManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         createNotificationChannel()
         getScreenDimensions()
     }
@@ -58,7 +67,7 @@ class ScreenRecordingService : Service() {
             ACTION_START_RECORDING -> {
                 if (!isRecording) {
                     val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0)
-                    val resultData = intent.getParcelableExtra<Intent>(EXTRA_RESULT_INTENT)
+                    val resultData = intent.getParcelableExtra(EXTRA_RESULT_INTENT, Intent::class.java)
                     if (resultData != null) {
                         startScreenRecording(resultCode, resultData)
                     } else {
@@ -78,12 +87,13 @@ class ScreenRecordingService : Service() {
 
     private fun getScreenDimensions() {
         try {
-            val metrics = DisplayMetrics()
-            val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowManager.defaultDisplay.getMetrics(metrics)
-            screenDensity = metrics.densityDpi
-            displayWidth = metrics.widthPixels
-            displayHeight = metrics.heightPixels
+            val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+            val windowMetrics = windowManager.currentWindowMetrics
+            val bounds = windowMetrics.bounds
+
+            displayWidth = bounds.width()
+            displayHeight = bounds.height()
+            screenDensity = resources.displayMetrics.densityDpi
 
             // Limit dimensions for performance and compatibility
             if (displayWidth > 1920) displayWidth = 1920
@@ -133,27 +143,43 @@ class ScreenRecordingService : Service() {
 
     private fun setupMediaRecorder() {
         try {
-            mediaRecorder = MediaRecorder().apply {
+            // Get user preferences
+            val videoBitrate = RecordingPreferences.getVideoBitrate(this) * 1000 // Convert kbps to bps
+            val audioBitrate = RecordingPreferences.getAudioBitrate(this) * 1000 // Convert kbps to bps
+            val audioSampleRate = RecordingPreferences.getAudioSampleRate(this)
+            val frameRate = RecordingPreferences.getFrameRate(this)
+            val width = RecordingPreferences.getResolutionWidth(this)
+            val height = RecordingPreferences.getResolutionHeight(this)
+
+            // Constrain resolution to screen dimensions
+            val finalWidth = minOf(width, displayWidth)
+            val finalHeight = minOf(height, displayHeight)
+
+            mediaRecorder = MediaRecorder(this).apply {
                 // Audio configuration
                 setAudioSource(MediaRecorder.AudioSource.MIC)
                 setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setAudioSamplingRate(44100)
-                setAudioEncodingBitRate(96000)
+                setAudioSamplingRate(audioSampleRate)
+                setAudioEncodingBitRate(audioBitrate)
 
                 // Video configuration
                 setVideoSource(MediaRecorder.VideoSource.SURFACE)
                 setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-                setVideoEncodingBitRate(5000000) // 5 Mbps
-                setVideoFrameRate(30)
-                setVideoSize(displayWidth, displayHeight)
+                setVideoEncodingBitRate(videoBitrate)
+                setVideoFrameRate(frameRate)
+                setVideoSize(finalWidth, finalHeight)
 
                 // Output configuration
                 setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
 
                 val outputFile = getOutputFile()
+                currentOutputFile = outputFile
                 setOutputFile(outputFile.absolutePath)
 
                 Log.d(TAG, "Output file: ${outputFile.absolutePath}")
+                Log.d(TAG, "Recording settings - Resolution: ${finalWidth}x${finalHeight}, " +
+                        "Video Bitrate: ${videoBitrate/1000}kbps, Frame Rate: ${frameRate}fps, " +
+                        "Audio Bitrate: ${audioBitrate/1000}kbps, Sample Rate: ${audioSampleRate}Hz")
 
                 prepare()
             }
@@ -168,11 +194,7 @@ class ScreenRecordingService : Service() {
 
     private fun getOutputFile(): File {
         val timestamp = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(Date())
-        val moviesDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-        } else {
-            File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "GNUXON")
-        }
+        val moviesDir = getExternalFilesDir(Environment.DIRECTORY_MOVIES)
 
         moviesDir?.mkdirs()
         return File(moviesDir, "GNUXON-Screen-$timestamp.mp4")
@@ -192,11 +214,21 @@ class ScreenRecordingService : Service() {
                     release()
                 }
                 mediaRecorder = null
+
+                // Generate MD5 hash for the recorded video
+                currentOutputFile?.let { file ->
+                    if (file.exists()) {
+                        serviceScope.launch {
+                            VideoHashManager.computeAndSaveHash(this@ScreenRecordingService, file)
+                            Log.d(TAG, "MD5 hash generated for ${file.name}")
+                        }
+                    }
+                }
             }
 
             cleanupResources()
 
-            stopForeground(true)
+            stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
 
             Log.d(TAG, "Screen recording stopped successfully")
@@ -230,18 +262,16 @@ class ScreenRecordingService : Service() {
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Screen Recording",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Screen recording for body camera functionality"
-                setShowBadge(false)
-            }
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Screen Recording",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Screen recording for body camera functionality"
+            setShowBadge(false)
         }
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     private fun buildRecordingNotification(): Notification {
@@ -280,5 +310,7 @@ class ScreenRecordingService : Service() {
         if (isRecording) {
             stopScreenRecording()
         }
+        // Cancel coroutines when service is destroyed
+        serviceScope.cancel()
     }
 }

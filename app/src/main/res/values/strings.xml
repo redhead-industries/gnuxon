@@ -31,4 +31,112 @@
     <!-- Screen Recording Stuff -->
     <string name="screen_recording_channel_name">Screen Recording</string>
     <string name="screen_recording_channel_description">Screen recording for body camera functionality</string>
+
+    <!-- Main Activity -->
+    <string name="main_menu_title">GNUXON</string>
+    <string name="no_recordings_yet">No recordings yet</string>
+    <string name="tap_camera_to_start">Tap the camera button to start recording</string>
+    <string name="open_camera">Open Camera</string>
+    <string name="recordings_count">%d recording(s)</string>
+
+    <!-- Sorting Options -->
+    <string name="sort_videos">Sort Videos</string>
+    <string name="sort_newest_first">Newest First</string>
+    <string name="sort_oldest_first">Oldest First</string>
+    <string name="sort_name_asc">Name A-Z</string>
+    <string name="sort_name_desc">Name Z-A</string>
+    <string name="sort_size_desc">Largest First</string>
+    <string name="sort_size_asc">Smallest First</string>
+
+    <!-- Video Options -->
+    <string name="video_options">Video Options</string>
+    <string name="share_video">Share</string>
+    <string name="delete_video">Delete</string>
+    <string name="rename_video">Rename</string>
+    <string name="view_hash">View Hash</string>
+    <string name="copy_hash">Copy Hash</string>
+
+    <!-- Delete Confirmation -->
+    <string name="delete_video_title">Delete Video?</string>
+    <string name="delete_video_message">Delete %s? This cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Rename Dialog -->
+    <string name="rename_video_title">Rename Video</string>
+    <string name="video_filename">Filename</string>
+    <string name="rename">Rename</string>
+    <string name="invalid_filename">Invalid filename</string>
+    <string name="filename_empty">Filename cannot be empty</string>
+    <string name="filename_exists">A file with this name already exists</string>
+
+    <!-- Toast Messages -->
+    <string name="video_deleted">Video deleted</string>
+    <string name="video_delete_failed">Failed to delete video</string>
+    <string name="video_renamed">Video renamed</string>
+    <string name="video_rename_failed">Failed to rename video</string>
+    <string name="video_shared">Sharing video</string>
+    <string name="no_video_player">No video player found</string>
+
+    <!-- Hash Related -->
+    <string name="hash_unavailable">Hash unavailable</string>
+    <string name="hash_label">MD5 Hash</string>
+    <string name="hash_dialog_title">Video Hash</string>
+    <string name="hash_copied">Hash copied to clipboard</string>
+    <string name="full_hash_label">Full MD5 Hash:</string>
+
+    <!-- Settings Activity -->
+    <string name="settings_title">Recording Settings</string>
+    <string name="settings_menu_item">Settings</string>
+
+    <!-- Video Settings -->
+    <string name="video_settings_category">Video Settings</string>
+    <string name="video_quality_title">Video Quality</string>
+    <string name="video_quality_summary">Select recording quality preset or custom</string>
+    <string name="custom_bitrate_title">Custom Bitrate</string>
+    <string name="custom_bitrate_summary">Enter bitrate in Mbps (1-50)</string>
+    <string name="custom_bitrate_dialog_title">Custom Video Bitrate</string>
+    <string name="custom_bitrate_dialog_message">Enter bitrate in Mbps (1-50)</string>
+    <string name="resolution_title">Resolution</string>
+    <string name="resolution_summary">Select video resolution</string>
+    <string name="frame_rate_title">Frame Rate</string>
+    <string name="frame_rate_summary">Frames per second</string>
+
+    <!-- Audio Settings -->
+    <string name="audio_settings_category">Audio Settings</string>
+    <string name="audio_bitrate_title">Audio Bitrate</string>
+    <string name="audio_bitrate_summary">Audio encoding quality</string>
+    <string name="audio_sample_rate_title">Audio Sample Rate</string>
+    <string name="audio_sample_rate_summary">Audio sampling frequency</string>
+
+    <!-- Storage Estimate -->
+    <string name="storage_estimate_category">Storage Information</string>
+    <string name="storage_estimate_title">Estimated File Size</string>
+    <string name="storage_estimate_summary">~%d MB per minute of recording</string>
+
+    <!-- Quality Presets -->
+    <string name="quality_low">Low (2 Mbps)</string>
+    <string name="quality_medium">Medium (5 Mbps)</string>
+    <string name="quality_high">High (10 Mbps)</string>
+    <string name="quality_ultra">Ultra (15 Mbps)</string>
+    <string name="quality_custom">Custom</string>
+
+    <!-- Frame Rate Options -->
+    <string name="fps_24">24 fps</string>
+    <string name="fps_30">30 fps</string>
+    <string name="fps_60">60 fps</string>
+
+    <!-- Audio Bitrate Options -->
+    <string name="audio_bitrate_96">96 kbps</string>
+    <string name="audio_bitrate_128">128 kbps</string>
+    <string name="audio_bitrate_192">192 kbps</string>
+    <string name="audio_bitrate_256">256 kbps</string>
+
+    <!-- Audio Sample Rate Options -->
+    <string name="audio_sample_rate_44100">44.1 kHz (CD Quality)</string>
+    <string name="audio_sample_rate_48000">48 kHz (Professional)</string>
+
+    <!-- Validation Messages -->
+    <string name="bitrate_validation_error">Bitrate must be between 1 and 50 Mbps</string>
+    <string name="invalid_bitrate">Invalid bitrate value</string>
 </resources>

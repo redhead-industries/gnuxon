@@ -6,7 +6,6 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
@@ -20,23 +19,16 @@ import redhead.app.gnuxon.service.GnuxonDeviceAdminReceiver
 
 class FirstRun : AppCompatActivity() {
 
-    private val requiredPermissions = arrayOf(
+    // Only runtime permissions that need to be requested
+    private val runtimePermissions = arrayOf(
         Manifest.permission.CAMERA,
         Manifest.permission.RECORD_AUDIO,
         Manifest.permission.POST_NOTIFICATIONS,
-        Manifest.permission.FOREGROUND_SERVICE,
-        Manifest.permission.FOREGROUND_SERVICE_CAMERA,
-        Manifest.permission.WAKE_LOCK
+        Manifest.permission.READ_MEDIA_VIDEO
     )
 
-    private val storagePermissions = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-        arrayOf(
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
-    } else emptyArray()
-
-    private val allPermissions = requiredPermissions + storagePermissions
+    // FOREGROUND_SERVICE, FOREGROUND_SERVICE_CAMERA, and WAKE_LOCK are normal permissions
+    // that are automatically granted at install time and don't need to be requested
 
     private lateinit var devicePolicyManager: DevicePolicyManager
     private lateinit var adminComponent: ComponentName
@@ -47,35 +39,64 @@ class FirstRun : AppCompatActivity() {
         val allGranted = permissions.all { it.value }
 
         if (allGranted) {
-            startActivity(Intent(this, Camera::class.java))
-            finish()
+            navigateToMainActivity()
         } else {
             showPermissionExplanation()
         }
     }
 
+    private val deviceAdminLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            Toast.makeText(this, "Device admin enabled", Toast.LENGTH_SHORT).show()
+            requestPermissions()
+        } else {
+            showAdminExplanation()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_first_run)
 
         devicePolicyManager = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
         adminComponent = ComponentName(this, GnuxonDeviceAdminReceiver::class.java)
 
+        // Check if we should skip first run and go straight to MainActivity
+        if (shouldSkipFirstRun()) {
+            navigateToMainActivity()
+            return
+        }
+
+        setContentView(R.layout.activity_first_run)
+
+        // Setup UI
         val grantButton: Button = findViewById(R.id.btn_grant_permissions)
         val legalText: TextView = findViewById(R.id.tv_legal)
+        legalText.text = getString(R.string.first_run_legal_text)
+        grantButton.setOnClickListener { requestPermissionsAndAdmin() }
 
         // Show the RedHead + GPLv3 welcome dialog first
         showWelcomeDialog {
-            // After user presses “Continue”, proceed normally
-            legalText.text = getString(R.string.first_run_legal_text)
-            grantButton.setOnClickListener { requestPermissionsAndAdmin() }
-
-            if (hasAllPermissions() && devicePolicyManager.isAdminActive(adminComponent)) {
-                startActivity(Intent(this, Camera::class.java))
-                finish()
+            // After user presses "Continue", check if we need to request permissions
+            if (shouldSkipFirstRun()) {
+                navigateToMainActivity()
             } else if (hasAllPermissions() && !devicePolicyManager.isAdminActive(adminComponent)) {
+                // Has permissions but not device admin
                 requestDeviceAdmin()
             }
+        }
+    }
+
+    private fun shouldSkipFirstRun(): Boolean {
+        // Skip first run if all permissions are granted and device admin is active
+        return hasAllPermissions() && devicePolicyManager.isAdminActive(adminComponent)
+    }
+
+    private fun navigateToMainActivity() {
+        if (!isFinishing && !isDestroyed) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
     }
 
@@ -102,7 +123,7 @@ class FirstRun : AppCompatActivity() {
     }
 
     private fun hasAllPermissions(): Boolean {
-        return allPermissions.all {
+        return runtimePermissions.all {
             ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
         }
     }
@@ -120,11 +141,11 @@ class FirstRun : AppCompatActivity() {
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
             "GNUXON requires device administrator privileges to maintain background recording for body camera functionality.")
-        startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN)
+        deviceAdminLauncher.launch(intent)
     }
 
     private fun requestPermissions() {
-        permissionLauncher.launch(allPermissions)
+        permissionLauncher.launch(runtimePermissions)
     }
 
     private fun showPermissionExplanation() {
@@ -152,19 +173,4 @@ class FirstRun : AppCompatActivity() {
             .show()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_ENABLE_ADMIN) {
-            if (resultCode == RESULT_OK) {
-                Toast.makeText(this, "Device admin enabled", Toast.LENGTH_SHORT).show()
-                requestPermissions()
-            } else {
-                showAdminExplanation()
-            }
-        }
-    }
-
-    companion object {
-        private const val REQUEST_CODE_ENABLE_ADMIN = 1001
-    }
 }

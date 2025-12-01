@@ -16,22 +16,6 @@ class BackgroundRecordingService(private val context: Context) {
     private val notificationService = NotificationService(context)
     private var isBackgroundRecording = false
 
-    fun startBackgroundRecording() {
-        Log.d(TAG, "Starting background recording service")
-        try {
-            val intent = Intent(context, BackgroundRecordingForegroundService::class.java).apply {
-                action = BackgroundRecordingForegroundService.ACTION_START_RECORDING
-            }
-
-            context.startForegroundService(intent)
-
-            isBackgroundRecording = true
-            // Also show the regular notification
-            showRecordingNotification()
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to start background recording", e)
-        }
-    }
 
     fun stopBackgroundRecording() {
         Log.d(TAG, "Stopping background recording service")
@@ -85,16 +69,14 @@ class NotificationService(private val context: Context) {
     }
 
     private fun createNotificationChannel() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            val channel = android.app.NotificationChannel(
-                CHANNEL_ID,
-                context.getString(R.string.recording_channel_name),
-                android.app.NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = context.getString(R.string.recording_channel_description)
-            }
-            notificationManager.createNotificationChannel(channel)
+        val channel = android.app.NotificationChannel(
+            CHANNEL_ID,
+            context.getString(R.string.recording_channel_name),
+            android.app.NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = context.getString(R.string.recording_channel_description)
         }
+        notificationManager.createNotificationChannel(channel)
     }
 
     fun showRecordingNotification() {

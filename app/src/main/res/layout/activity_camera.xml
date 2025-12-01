@@ -13,7 +13,7 @@
         android:layout_centerHorizontal="true" />
 
     <!-- Record Button -->
-    <Button
+    <ImageButton
         android:id="@+id/btn_record"
         android:layout_width="80dp"
         android:layout_height="80dp"
@@ -21,9 +21,10 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="50dp"
         android:background="@drawable/record_button_bg"
-        android:text="@string/start_recording"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
+        android:src="@drawable/ic_record"
+        android:contentDescription="@string/start_recording"
+        android:scaleType="fitCenter"
+        android:padding="16dp"
         android:elevation="6dp" />
 
     <!-- Overlay: Control Instructions -->

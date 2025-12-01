@@ -1,10 +1,8 @@
 package redhead.app.gnuxon.service
 
 import android.app.*
-import android.content.Context
 import android.content.Intent
 import android.hardware.display.DisplayManager
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
@@ -68,35 +66,21 @@ class BackgroundRecordingForegroundService : Service() {
 
     private fun startForegroundRecording() {
         val notification = buildRecordingNotification()
-
-        // Use high priority for the notification
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(NOTIFICATION_ID, notification)
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
-        }
-
+        startForeground(NOTIFICATION_ID, notification)
         Log.d("BackgroundRecording", "Foreground service started with wake lock")
     }
 
     private fun stopForegroundRecording() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(Service.STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
-
+        stopForeground(STOP_FOREGROUND_REMOVE)
         releaseWakeLock()
         stopSelf()
         Log.d("BackgroundRecording", "Foreground service stopped")
     }
 
     private fun acquireWakeLock() {
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK or
-                    PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            PowerManager.PARTIAL_WAKE_LOCK,
             "GNUXON::BackgroundRecordingWakeLock"
         )
         wakeLock.setReferenceCounted(false)
@@ -112,28 +96,23 @@ class BackgroundRecordingForegroundService : Service() {
     }
 
     private fun setupDisplayListener() {
-        displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        displayManager = getSystemService(DISPLAY_SERVICE) as DisplayManager
         displayManager.registerDisplayListener(displayListener, null)
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                getString(R.string.foreground_recording_channel_name),
-                NotificationManager.IMPORTANCE_HIGH // Changed to HIGH priority
-            ).apply {
-                description = getString(R.string.foreground_recording_channel_description)
-                setShowBadge(true)
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-                // Prevent dismissal
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    isBlockable = false
-                }
-            }
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            getString(R.string.foreground_recording_channel_name),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = getString(R.string.foreground_recording_channel_description)
+            setShowBadge(true)
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            isBlockable = false
         }
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     private fun buildRecordingNotification(): Notification {

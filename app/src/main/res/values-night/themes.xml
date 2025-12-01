@@ -1,16 +1,30 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme. -->
-    <style name="Theme.GNUXON" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.Gnuxon" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorPrimary">@color/gnuxon_dark_gray</item>
+        <item name="colorPrimaryVariant">@color/gnuxon_charcoal</item>
+        <item name="colorOnPrimary">@color/gnuxon_on_primary</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
-        <item name="colorOnSecondary">@color/black</item>
+        <item name="colorSecondary">@color/gnuxon_black</item>
+        <item name="colorSecondaryVariant">@color/gnuxon_charcoal</item>
+        <item name="colorOnSecondary">@color/gnuxon_on_secondary</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+        <item name="android:statusBarColor">@color/gnuxon_black</item>
+        <!-- Preference theme -->
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+    </style>
+
+    <!-- Preference Theme Overlay -->
+    <style name="PreferenceThemeOverlay" parent="PreferenceThemeOverlay.v14.Material">
+        <item name="android:textColorPrimary">@color/gnuxon_on_primary</item>
+        <item name="android:textColorSecondary">@color/gnuxon_on_primary</item>
+        <item name="preferenceCategoryStyle">@style/Preference.Category</item>
+        <item name="preferenceCategoryTitleTextColor">@color/gnuxon_on_primary</item>
+    </style>
+
+    <!-- Preference Category Style -->
+    <style name="Preference.Category" parent="Preference.Category.Material">
+        <item name="android:textColor">@color/gnuxon_on_primary</item>
     </style>
 </resources>
