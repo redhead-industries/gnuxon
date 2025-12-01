@@ -51,7 +51,7 @@ See the [LICENSE](LICENSE) file for full legal information.
 
 ```
 bash
-git clone https://github.com/RedHeadIndustries/gnuxon.git
+git clone https://github.com/redhead-industries/gnuxon.git
 cd gnuxon
 ```
 
@@ -72,6 +72,47 @@ cd gnuxon
    ```bash
    adb install app/build/outputs/apk/debug/app-debug.apk
    ```
+
+---
+
+## 🔧 Reproducible Builds
+
+GNUXON supports reproducible builds for verification and F-Droid compatibility.
+
+### Prerequisites for Reproducible Builds
+
+- **Android Studio:** Otter (2025.2.1) or newer
+- **Gradle:** 8.13.1 (as specified in gradle/wrapper/gradle-wrapper.properties)
+- **JDK:** 17 (recommended)
+- **Build Tools:** Use the versions specified in build.gradle.kts
+
+### Building Reproducibly in Android Studio
+
+1. Ensure you're using the correct JDK version:
+   - Go to **File > Settings > Build, Execution, Deployment > Build Tools > Gradle**
+   - Set **Gradle JDK** to JDK 17
+
+2. Use the exact Gradle version:
+   ```bash
+   ./gradlew --version
+   # Should show Gradle 8.13.1
+   ```
+
+3. Build the release APK:
+   ```bash
+   ./gradlew assembleRelease
+   ```
+
+4. Verify the build:
+   - The APK will be in `app/build/outputs/apk/release/`
+   - Use `apksigner` to verify the build is consistent
+
+### Notes for Reproducibility
+
+- Builds are deterministic when using the same Gradle, JDK, and build tools versions
+- Timestamps are disabled in the build configuration
+- F-Droid builds use the same configuration for verification
+- For exact F-Droid reproducibility, use the build environment specified in `.fdroid.yml`
 
 ---
 
