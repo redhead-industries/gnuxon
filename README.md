@@ -3,7 +3,7 @@
 [redheadindustries.xyz](https://redheadindustries.xyz)
 
 # GNUXON – The Free and Open-Source Bodycam App  
-**Version:** v1.0b “Whizzbang – Milestone 1”  
+**Version:** v2.0b “Bobcat – Milestone 2”  
 **License:** GNU General Public License v3 (GPLv3)  
 **Developer:** RedHead (RIIDF Branch)  
 
